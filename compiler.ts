@@ -49,6 +49,23 @@ function codeGenExpr(expr : Expr) : Array<string> {
     case "builtin1":
       const argStmts = codeGenExpr(expr.arg);
       return argStmts.concat([`(call $${expr.name})`]);
+    case "builtin2":
+      const arg1Stmt = codeGenExpr(expr.arg1);
+      const arg2Stmt = codeGenExpr(expr.arg2);
+      return arg1Stmt.concat(arg2Stmt,[`(call $${expr.name})`])
+    case "biexp":
+      const v1Stmt = codeGenExpr(expr.value1);
+      const v2Stmt = codeGenExpr(expr.value2);
+      switch(expr.name) {
+        case "-":
+          return v1Stmt.concat(v2Stmt,[`(i32.sub)`])
+        case "+":
+          return v1Stmt.concat(v2Stmt,[`(i32.add)`])
+        case "*":
+          return v1Stmt.concat(v2Stmt,[`(i32.mul)`])
+        default:
+          throw new Error("Could not compile operation " + expr.name);
+      }
     case "num":
       return ["(i32.const " + expr.value + ")"];
     case "id":
