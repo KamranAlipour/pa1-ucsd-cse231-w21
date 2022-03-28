@@ -21,12 +21,43 @@ export function traverseExpr(c : TreeCursor, s : string) : Expr {
       c.firstChild(); // go into arglist
       c.nextSibling(); // find single argument in arglist
       const arg = traverseExpr(c, s);
-      c.parent(); // pop arglist
-      c.parent(); // pop CallExpression
-      return {
+      c.nextSibling();
+      // @ts-ignore
+      if (c.type.name==","){
+        c.nextSibling()
+        const arg2 = traverseExpr(c,s);
+        c.parent(); // pop arglist
+        c.parent(); // pop CallExpression
+        return {
+        tag: "builtin2",
+        name: callName,
+        arg1: arg,
+        arg2: arg2
+        }
+
+      }
+      else{
+        c.parent(); // pop arglist
+        c.parent(); // pop CallExpression
+        return {
         tag: "builtin1",
         name: callName,
         arg: arg
+        };
+      }
+    case "BinaryExpression":
+      c.firstChild();
+      const expr1 = traverseExpr(c, s);
+      c.nextSibling();
+      const opName = s.substring(c.from, c.to);
+      c.nextSibling();
+      const expr2 = traverseExpr(c, s);
+      c.parent();
+      return {
+        tag: "biexp",
+        name: opName,
+        value1: expr1,
+        value2: expr2
       };
 
     default:
